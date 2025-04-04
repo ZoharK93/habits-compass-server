@@ -10,7 +10,10 @@ export interface BaseMetric {
 }
 
 export enum MetricType {
-    POSITIVE = 'positive',
+    GUITAR = 'guitar',
+    WORKOUT = 'workout',
+    CHORES = 'chores',
+    PERSONAL_PROJECT = 'personal_project',
     NEGATIVE = 'negative',
     PASSIVE = 'passive'
 }
