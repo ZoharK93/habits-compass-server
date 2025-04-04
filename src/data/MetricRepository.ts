@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { Metric } from '../models/Metric';
+import { BaseMetric } from '../models/metrics/BaseMetric';
 import { MetricEntry } from '../models/MetricEntry';
 import logger from '../utils/logger';
 
@@ -11,7 +11,7 @@ export class MetricRepository {
         return `${this.METRICS_DIR}/${id}.json`;
     }
 
-    public async createMetric(metric: Metric): Promise<Metric> {
+    public async createMetric(metric: BaseMetric): Promise<BaseMetric> {
         logger.info('Creating new metric in repository');
         const metrics = await this.getAllMetrics();
         const newMetric = { ...metric, id: Math.random().toString(36).substr(2, 9) };
@@ -32,7 +32,7 @@ export class MetricRepository {
         return newMetric;
     }
 
-    public async editMetric(id: string, metric: Metric): Promise<Metric> {
+    public async editMetric(id: string, metric: BaseMetric): Promise<BaseMetric> {
         logger.info('Editing metric in repository', { id });
         const metrics = await this.getAllMetrics();
         const metricIndex = metrics.findIndex(m => m.id === id);
@@ -50,7 +50,7 @@ export class MetricRepository {
         // Update individual metric file
         logger.debug('Updating metric file', { id });
         const existingMetricData = await this.getMetric(id);
-        const updatedMetricData = { ...metric, id, occurrences: existingMetricData.occurrences };
+        const updatedMetricData = { ...metric, id, occurrences: existingMetricData!.occurrences };
         await fs.writeFile(this.getMetricFilePath(id), JSON.stringify(updatedMetricData, null, 2));
         logger.info('Successfully updated metric in repository', { id });
 
@@ -81,10 +81,6 @@ export class MetricRepository {
             throw new Error('Metric not found');
         }
 
-        const occurrenceIndex = metric.occurrences.findIndex(o => o.id === occurrenceId);
-        if (occurrenceIndex === -1) throw new Error('Occurrence not found');
-
-        metric.occurrences[occurrenceIndex] = { ...occurrence, id: occurrenceId };
         await fs.writeFile(this.getMetricFilePath(id), JSON.stringify(metric, null, 2));
     }
 
@@ -103,14 +99,14 @@ export class MetricRepository {
         }
     }
 
-    public async getMetric(id: string): Promise<Metric> {
+    public async getMetric(id: string): Promise<BaseMetric|undefined> {
         logger.debug('Reading metric file', { id });
         try {
             const data = await fs.readFile(this.getMetricFilePath(id), 'utf8');
             return JSON.parse(data);
         } catch (error) {
             logger.debug('Metric file not found', { id });
-            return null;
+            return;
         }
     }
 
@@ -121,7 +117,7 @@ export class MetricRepository {
             const metrics = JSON.parse(data);
             logger.debug('Successfully read metrics list', { count: metrics.length });
             return metrics;
-        } catch (error) {
+        } catch (error: any) {
             logger.warn('Failed to read metrics list file, returning empty list', { error: error.message });
             return [];
         }

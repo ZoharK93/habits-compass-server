@@ -2,6 +2,7 @@ import { MetricRepository } from '../data/MetricRepository';
 import { MetricValidator } from './MetricValidator';
 import { MetricType, BaseMetric, Occurrence } from '../models/metrics/BaseMetric';
 import { MetricEntry } from '../models/MetricEntry';
+import logger from '../utils/logger';
 
 export class MetricService {
     private metricRepository: MetricRepository;
@@ -84,7 +85,7 @@ export class MetricService {
         logger.info('Successfully deleted metric', { id });
     }
 
-    public async getMetric(id: string): Promise<BaseMetric> {
+    public async getMetric(id: string): Promise<BaseMetric|undefined> {
         logger.info('Fetching metric', { id });
         const metric = await this.metricRepository.getMetric(id);
         if (!metric) {
@@ -93,7 +94,7 @@ export class MetricService {
         return metric;
     }
 
-    public async getAllMetrics(): Promise<BaseMetric[]> {
+    public async getAllMetrics(): Promise<(BaseMetric|undefined)[]> {
         const metricEntries = await this.metricRepository.getAllMetrics();
         return Promise.all(metricEntries.map(entry => this.metricRepository.getMetric(entry.id)));
     }

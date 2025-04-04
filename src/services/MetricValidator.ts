@@ -106,30 +106,24 @@ export class MetricValidator {
 
     private static validateWorkoutOccurrence(occurrence: WorkoutOccurrence): boolean {
         logger.debug('Validating workout occurrence', { exercises: occurrence.exercises?.length });
-        return typeof occurrence.duration === 'number' &&
-               occurrence.duration > 0 &&
-               Array.isArray(occurrence.exercises) &&
+        return Array.isArray(occurrence.exercises) &&
                occurrence.exercises.every(exercise => 
                    typeof exercise.name === 'string' &&
                    typeof exercise.sets === 'number' &&
-                   typeof exercise.reps === 'number' &&
                    Object.values(ExerciseCategory).includes(exercise.category)
                );
     }
 
     private static validateChoreOccurrence(occurrence: ChoreOccurrence): boolean {
-        logger.debug('Validating chore occurrence', { completedChores: occurrence.completedChores?.length });
+        logger.debug('Validating chore occurrence');
         return typeof occurrence.date === 'object' &&
-               occurrence.date instanceof Date &&
-               typeof occurrence.duration === 'number' &&
-               occurrence.duration > 0;
+               occurrence.date instanceof Date;
     }
 
     private static validateProjectOccurrence(occurrence: ProjectOccurrence): boolean {
-        logger.debug('Validating project occurrence', { milestone: occurrence.milestone });
+        logger.debug('Validating project occurrence');
         return typeof occurrence.date === 'object' &&
                occurrence.date instanceof Date &&
-               typeof occurrence.description === 'string' &&
                typeof occurrence.timeSpent === 'number' &&
                occurrence.timeSpent > 0;
     }
