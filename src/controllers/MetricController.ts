@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
 import { MetricService } from '../services/MetricService';
 import { MetricType, BaseMetric } from '../models/metrics/BaseMetric';
 import { MetricValidator } from '../services/MetricValidator';
@@ -11,8 +12,10 @@ export class MetricController {
     }
 
     public async createMetric(req: Request, res: Response): Promise<void> {
+        logger.info('Received create metric request');
         try {
             const { type, ...metricData } = req.body;
+            logger.debug('Create metric request body', { type, metricData });
             
             if (!type || !Object.values(MetricType).includes(type)) {
                 res.status(400).json({ error: 'Invalid or missing metric type' });
@@ -30,17 +33,20 @@ export class MetricController {
             }
 
             const createdMetric = await this.metricService.createMetric(metric);
+            logger.info('Metric created successfully', { id: createdMetric.id });
             res.status(201).json(createdMetric);
         } catch (error) {
-            console.error('Error creating metric:', error);
+            logger.error('Error creating metric', { error: error.message });
             res.status(500).json({ error: 'Internal server error' });
         }
     }
 
     public async editMetric(req: Request, res: Response): Promise<void> {
+        const { id } = req.params;
+        logger.info('Received edit metric request', { id });
         try {
-            const { id } = req.params;
             const { type, ...metricData } = req.body;
+            logger.debug('Edit metric request body', { id, type, metricData });
 
             if (!type || !Object.values(MetricType).includes(type)) {
                 res.status(400).json({ error: 'Invalid or missing metric type' });
@@ -58,9 +64,10 @@ export class MetricController {
             }
 
             const updatedMetric = await this.metricService.editMetric(id, metric);
+            logger.info('Metric updated successfully', { id });
             res.status(200).json(updatedMetric);
         } catch (error) {
-            console.error('Error editing metric:', error);
+            logger.error('Error editing metric', { error: error.message });
             res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -84,7 +91,7 @@ export class MetricController {
             await this.metricService.logMetricOccurrence(id, occurrence);
             res.status(200).json({ message: 'Occurrence logged successfully' });
         } catch (error) {
-            console.error('Error logging metric occurrence:', error);
+            logger.error('Error logging metric occurrence', { error: error.message });
             res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -108,7 +115,7 @@ export class MetricController {
             await this.metricService.editMetricOccurrence(id, parseInt(occurrenceIndex), occurrence);
             res.status(200).json({ message: 'Occurrence updated successfully' });
         } catch (error) {
-            console.error('Error editing metric occurrence:', error);
+            logger.error('Error editing metric occurrence', { error: error.message });
             res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -119,7 +126,7 @@ export class MetricController {
             await this.metricService.deleteMetric(id);
             res.status(204).send();
         } catch (error) {
-            console.error('Error deleting metric:', error);
+            logger.error('Error deleting metric', { error: error.message });
             res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -136,7 +143,7 @@ export class MetricController {
             
             res.status(200).json(metric);
         } catch (error) {
-            console.error('Error getting metric:', error);
+            logger.error('Error getting metric', { error: error.message });
             res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -146,7 +153,7 @@ export class MetricController {
             const metrics = await this.metricService.getAllMetrics();
             res.status(200).json(metrics);
         } catch (error) {
-            console.error('Error getting all metrics:', error);
+            logger.error('Error getting all metrics', { error: error.message });
             res.status(500).json({ error: 'Internal server error' });
         }
     }

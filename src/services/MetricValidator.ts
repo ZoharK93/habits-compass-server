@@ -1,4 +1,5 @@
 import { MetricType, BaseMetric } from '../models/metrics/BaseMetric';
+import logger from '../utils/logger';
 import { GuitarMetric, GuitarOccurrence } from '../models/metrics/GuitarMetric';
 import { WorkoutMetric, WorkoutOccurrence, ExerciseCategory } from '../models/metrics/WorkoutMetric';
 import { ChoresMetric, ChoreOccurrence } from '../models/metrics/ChoresMetric';
@@ -6,6 +7,7 @@ import { PersonalProjectMetric, ProjectOccurrence } from '../models/metrics/Pers
 
 export class MetricValidator {
     public static validateMetric(metric: BaseMetric): boolean {
+        logger.debug('Validating metric', { type: metric.type });
         switch (metric.type) {
             case MetricType.GUITAR:
                 return this.validateGuitarMetric(metric as GuitarMetric);
@@ -21,6 +23,7 @@ export class MetricValidator {
     }
 
     private static validateGuitarMetric(metric: GuitarMetric): boolean {
+        logger.debug('Validating guitar metric', { name: metric.name });
         if (!metric.occurrences) return false;
         return metric.occurrences.every(occurrence => {
             const guitarOcc = occurrence as GuitarOccurrence;
@@ -32,6 +35,7 @@ export class MetricValidator {
     }
 
     private static validateGuitarActivity(activity: any): boolean {
+        logger.debug('Validating guitar activity');
         if (!activity) return true;
         return Array.isArray(activity.songs) &&
                activity.date instanceof Date &&
@@ -39,6 +43,7 @@ export class MetricValidator {
     }
 
     private static validateWorkoutMetric(metric: WorkoutMetric): boolean {
+        logger.debug('Validating workout metric', { name: metric.name });
         if (!metric.occurrences) return false;
         return metric.occurrences.every(occurrence => {
             const workoutOcc = occurrence as WorkoutOccurrence;
@@ -59,6 +64,7 @@ export class MetricValidator {
     }
 
     private static validateChoresMetric(metric: ChoresMetric): boolean {
+        logger.debug('Validating chores metric', { name: metric.name });
         if (!metric.occurrences || !Array.isArray(metric.chores)) return false;
         const validChores = metric.chores.every(chore =>
             typeof chore.name === 'string' &&
@@ -83,6 +89,7 @@ export class MetricValidator {
     }
 
     public static validateMetricOccurrence(type: MetricType, occurrence: any): boolean {
+        logger.debug('Validating metric occurrence', { type });
         switch (type) {
             case MetricType.GUITAR:
                 return this.validateGuitarActivity(occurrence);
@@ -98,6 +105,7 @@ export class MetricValidator {
     }
 
     private static validateWorkoutOccurrence(occurrence: WorkoutOccurrence): boolean {
+        logger.debug('Validating workout occurrence', { exercises: occurrence.exercises?.length });
         return typeof occurrence.duration === 'number' &&
                occurrence.duration > 0 &&
                Array.isArray(occurrence.exercises) &&
@@ -110,6 +118,7 @@ export class MetricValidator {
     }
 
     private static validateChoreOccurrence(occurrence: ChoreOccurrence): boolean {
+        logger.debug('Validating chore occurrence', { completedChores: occurrence.completedChores?.length });
         return typeof occurrence.date === 'object' &&
                occurrence.date instanceof Date &&
                typeof occurrence.duration === 'number' &&
@@ -117,6 +126,7 @@ export class MetricValidator {
     }
 
     private static validateProjectOccurrence(occurrence: ProjectOccurrence): boolean {
+        logger.debug('Validating project occurrence', { milestone: occurrence.milestone });
         return typeof occurrence.date === 'object' &&
                occurrence.date instanceof Date &&
                typeof occurrence.description === 'string' &&
